@@ -1,2 +1,2 @@
-# AI5-chatbot-gemini
+# Chatbot-using-Gemini
 HosBot

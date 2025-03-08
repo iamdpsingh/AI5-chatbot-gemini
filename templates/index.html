@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="../static/styles/styles.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.0.13/js/all.js"></script>
+</head>
+
+<body>
+  <section class="msger">
+    <header class="msger-header">
+      <div class="msger-header-title">
+        <i class="fas fa-hospital"></i> HosBot <i class="fas fa-hospital"></i>
+      </div>
+    </header>
+
+    <main class="msger-chat" id="chatbox">
+      <div class="msg left-msg">
+        <img class="msg-img" src="../static/images/imgbot1.jpg" alt="Bot Image">
+        <div class="msg-bubble">
+          <div class="msg-info">
+            <div class="msg-info-name">HosBot</div>
+            <div class="msg-info-time" id="initial-time"></div>
+          </div>
+          <div class="msg-text">
+            Hi, welcome to the AI Help! I am HosBot, Go ahead and send me a message. 😄
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <form class="msger-inputarea" onsubmit="sendMessage(event)">
+      <input type="text" class="msger-input" id="userInput" placeholder="Enter your message...">
+      <button type="submit" class="msger-send-btn">Send</button>
+    </form>
+  </section>
+
+  <script>
+    // Update clock time
+    function updateClock() {
+      const now = new Date();
+      const h = "0" + now.getHours();
+      const m = "0" + now.getMinutes();
+      const formattedTime = `${h.slice(-2)}:${m.slice(-2)}`;
+      document.getElementById('initial-time').textContent = formattedTime;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Handle form submission
+    async function sendMessage(event) 
+    {
+      event.preventDefault();
+      const userInput = document.getElementById('userInput').value;
+      if (!userInput) return;
+
+      appendMessage("You", "../static/images/imgperbot1.jpg", "right", userInput);
+      document.getElementById('userInput').value = '';
+
+      try 
+      {
+        const response = await fetch('/chat', 
+        {
+            method: 'POST',
+            headers: 
+            {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: userInput })
+        });
+        const data = await response.json();
+        // Ensure the response is displayed correctly
+        const botResponse = typeof data.response === 'string' ? data.response : JSON.stringify(data.response);
+        appendMessage("HosBot", "../static/images/imgbot1.jpg", "left", botResponse);
+      } 
+      catch (error) 
+      {
+        console.error('Error:', error);
+        appendMessage("HosBot", "../static/images/imgbot1.jpg", "left", "An error occurred. Please try again.");
+      }
+    }
+
+    function appendMessage(name, img, side, text) {
+      const msgHTML = `
+        <div class="msg ${side}-msg">
+          <div class="msg-img" style="background-image: url(${img})"></div>
+          <div class="msg-bubble">
+            <div class="msg-info">
+              <div class="msg-info-name">${name}</div>
+              <div class="msg-info-time">${formatDate(new Date())}</div>
+            </div>
+            <div class="msg-text">${text}</div>
+          </div>
+        </div>
+      `;
+      const chatbox = document.getElementById('chatbox');
+      chatbox.insertAdjacentHTML("beforeend", msgHTML);
+      chatbox.scrollTop += 500;
+    }
+
+    function formatDate(date) {
+      const h = "0" + date.getHours();
+      const m = "0" + date.getMinutes();
+      return `${h.slice(-2)}:${m.slice(-2)}`;
+    }
+  </script>
+</body>
+
+</html>
